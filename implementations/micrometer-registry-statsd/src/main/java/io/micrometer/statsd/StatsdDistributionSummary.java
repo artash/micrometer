@@ -28,12 +28,12 @@ import java.util.concurrent.atomic.DoubleAdder;
 import java.util.concurrent.atomic.LongAdder;
 
 public class StatsdDistributionSummary extends AbstractDistributionSummary {
-    private final LongAdder count = new LongAdder();
-    private final DoubleAdder amount = new DoubleAdder();
-    private final TimeWindowMax max;
-    private final StatsdLineBuilder lineBuilder;
-    private final Subscriber<String> subscriber;
-    private volatile boolean shutdown = false;
+    protected final LongAdder count = new LongAdder();
+    protected final DoubleAdder amount = new DoubleAdder();
+    protected final TimeWindowMax max;
+    protected final StatsdLineBuilder lineBuilder;
+    protected final Subscriber<String> subscriber;
+    protected volatile boolean shutdown = false;
 
     StatsdDistributionSummary(Meter.Id id, StatsdLineBuilder lineBuilder, Subscriber<String> subscriber, Clock clock,
                               DistributionStatisticConfig distributionStatisticConfig, double scale) {

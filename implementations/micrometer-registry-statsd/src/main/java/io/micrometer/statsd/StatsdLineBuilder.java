@@ -40,5 +40,9 @@ public interface StatsdLineBuilder {
 
     String histogram(double amount);
 
+    default String distribution(double amount) {
+        return "";
+    }
+
     String timing(double timeMs);
 }

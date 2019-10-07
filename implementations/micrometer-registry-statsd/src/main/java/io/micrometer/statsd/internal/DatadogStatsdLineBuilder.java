@@ -19,6 +19,7 @@ import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Statistic;
 import io.micrometer.core.instrument.config.NamingConvention;
+import io.micrometer.core.instrument.util.DoubleFormat;
 import io.micrometer.core.lang.Nullable;
 import org.pcollections.HashTreePMap;
 import org.pcollections.PMap;
@@ -26,6 +27,8 @@ import org.pcollections.PMap;
 import java.util.stream.Collectors;
 
 public class DatadogStatsdLineBuilder extends FlavorStatsdLineBuilder {
+    private static final String TYPE_DISTRIBUTION = "d";
+
     private final Object tagsLock = new Object();
     @SuppressWarnings({"NullableProblems", "unused"})
     private volatile NamingConvention namingConvention;
@@ -45,6 +48,11 @@ public class DatadogStatsdLineBuilder extends FlavorStatsdLineBuilder {
     String line(String amount, @Nullable Statistic stat, String type) {
         updateIfNamingConventionChanged();
         return name + amount + "|" + type + tagsByStatistic(stat);
+    }
+
+    @Override
+    public String distribution(double amount) {
+        return line(DoubleFormat.decimalOrNan(amount), null, TYPE_DISTRIBUTION);
     }
 
     private void updateIfNamingConventionChanged() {

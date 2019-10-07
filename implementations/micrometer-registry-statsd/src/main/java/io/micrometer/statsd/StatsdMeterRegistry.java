@@ -348,6 +348,21 @@ public class StatsdMeterRegistry extends MeterRegistry {
         return summary;
     }
 
+    @SuppressWarnings("ConstantConditions")
+    @Override
+    protected DistributionSummary newGlobalDistributionSummary(Meter.Id id, DistributionStatisticConfig
+            distributionStatisticConfig, double scale) {
+
+        // Adds an infinity bucket for SLA violation calculation
+        if (distributionStatisticConfig.getSlaBoundaries() != null) {
+            distributionStatisticConfig = addInfBucket(distributionStatisticConfig);
+        }
+
+        DistributionSummary summary = new StatsdGlobalDistributionSummary(id, lineBuilder(id), processor, clock, distributionStatisticConfig, scale);
+        HistogramGauges.registerWithCommonFormat(summary, this);
+        return summary;
+    }
+
     @Override
     protected <T> FunctionCounter newFunctionCounter(Meter.Id id, T obj, ToDoubleFunction<T> countFunction) {
         StatsdFunctionCounter fc = new StatsdFunctionCounter<>(id, obj, countFunction, lineBuilder(id), processor);

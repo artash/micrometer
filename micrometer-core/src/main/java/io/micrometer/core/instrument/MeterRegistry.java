@@ -33,6 +33,7 @@ import org.pcollections.HashTreePMap;
 import org.pcollections.HashTreePSet;
 import org.pcollections.PMap;
 import org.pcollections.PSet;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -138,6 +139,19 @@ public abstract class MeterRegistry {
      * @return A new distribution summary.
      */
     protected abstract DistributionSummary newDistributionSummary(Meter.Id id, DistributionStatisticConfig distributionStatisticConfig, double scale);
+
+    /**
+     * Build a new global distribution summary to be added to the registry. This is guaranteed to only be called if the distribution summary doesn't already exist.
+     *
+     * @param id                          The id that uniquely identifies the global distribution summary.
+     * @param distributionStatisticConfig Configuration for published distribution statistics.
+     * @param scale                       Multiply every recorded sample by this factor.
+     * @return A new distribution summary.
+     */
+    protected DistributionSummary newGlobalDistributionSummary(Meter.Id id, DistributionStatisticConfig distributionStatisticConfig, double scale) {
+        throw new NotImplementedException();
+    }
+
 
     /**
      * Build a new custom meter to be added to the registry. This is guaranteed to only be called if the custom meter doesn't already exist.
@@ -285,6 +299,18 @@ public abstract class MeterRegistry {
     }
 
     /**
+     * Only used by {@link DistributionSummary#builder(String)}.
+     *
+     * @param id                          The identifier for this global distribution summary.
+     * @param distributionStatisticConfig Configuration that governs how distribution statistics are computed.
+     * @return A new or existing global distribution summary.
+     */
+    DistributionSummary distribution(Meter.Id id, DistributionStatisticConfig distributionStatisticConfig, double scale) {
+        return registerMeterIfNecessary(DistributionSummary.class, id, distributionStatisticConfig, (id2, filteredConfig) ->
+                newGlobalDistributionSummary(id2, filteredConfig.merge(defaultHistogramConfig()), scale), NoopDistributionSummary::new);
+    }
+
+    /**
      * Register a custom meter type.
      *
      * @param id           Id of the meter being registered.
@@ -383,6 +409,28 @@ public abstract class MeterRegistry {
      */
     public DistributionSummary summary(String name, String... tags) {
         return summary(name, Tags.of(tags));
+    }
+
+    /**
+     * Measures the global distribution of samples.
+     *
+     * @param name The base metric name
+     * @param tags Sequence of dimensions for breaking down the name.
+     * @return A new or existing distribution summary.
+     */
+    public DistributionSummary distribution(String name, Iterable<Tag> tags) {
+        return DistributionSummary.builder(name).tags(tags).global(true).register(this);
+    }
+
+    /**
+     * Measures the global distribution of samples.
+     *
+     * @param name The base metric name
+     * @param tags MUST be an even number of arguments representing key/value pairs of tags.
+     * @return A new or existing distribution summary.
+     */
+    public DistributionSummary distribution(String name, String... tags) {
+        return distribution(name, Tags.of(tags));
     }
 
     /**

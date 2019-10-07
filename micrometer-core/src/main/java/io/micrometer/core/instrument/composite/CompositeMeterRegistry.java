@@ -20,6 +20,7 @@ import io.micrometer.core.instrument.config.NamingConvention;
 import io.micrometer.core.instrument.distribution.DistributionStatisticConfig;
 import io.micrometer.core.instrument.distribution.pause.PauseDetector;
 import io.micrometer.core.lang.Nullable;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.Collections;
 import java.util.IdentityHashMap;
@@ -82,6 +83,11 @@ public class CompositeMeterRegistry extends MeterRegistry {
     @Override
     protected DistributionSummary newDistributionSummary(Meter.Id id, DistributionStatisticConfig distributionStatisticConfig, double scale) {
         return new CompositeDistributionSummary(id, distributionStatisticConfig, scale);
+    }
+
+    @Override
+    protected DistributionSummary newGlobalDistributionSummary(Meter.Id id, DistributionStatisticConfig distributionStatisticConfig, double scale) {
+        return new CompositeGlobalDistributionSummary(id, scale);
     }
 
     @Override

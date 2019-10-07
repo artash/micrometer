@@ -117,6 +117,7 @@ public interface DistributionSummary extends Meter, HistogramSupport {
         private final String name;
         private Tags tags = Tags.empty();
         private DistributionStatisticConfig.Builder distributionConfigBuilder = DistributionStatisticConfig.builder();
+        private boolean isGlobal = false;
 
         @Nullable
         private String description;
@@ -156,6 +157,12 @@ public interface DistributionSummary extends Meter, HistogramSupport {
             this.tags = tags.and(key, value);
             return this;
         }
+
+        public Builder global(Boolean isGlobal) {
+            this.isGlobal = isGlobal;
+            return this;
+        }
+
         /**
          * @param description Description text of the eventual distribution summary.
          * @return The distribution summary builder with added description.
@@ -310,7 +317,9 @@ public interface DistributionSummary extends Meter, HistogramSupport {
          * @return A new or existing distribution summary.
          */
         public DistributionSummary register(MeterRegistry registry) {
-            return registry.summary(new Meter.Id(name, tags, baseUnit, description, Type.DISTRIBUTION_SUMMARY), distributionConfigBuilder.build(), scale);
+            return isGlobal
+                    ? registry.distribution(new Meter.Id(name, tags, baseUnit, description, Type.DISTRIBUTION_SUMMARY), distributionConfigBuilder.build(), scale)
+                    : registry.summary(new Meter.Id(name, tags, baseUnit, description, Type.DISTRIBUTION_SUMMARY), distributionConfigBuilder.build(), scale);
         }
     }
 
